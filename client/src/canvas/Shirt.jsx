@@ -1,24 +1,37 @@
 import React from 'react'
 import { easing } from 'maath';
 import { useSnapshot } from 'valtio';
-import { useFrame } from '@react-three/fiber';
-import { Decal, useGLTF, useTexture } from '@react-three/drei';
+import { useFrame,useThree } from '@react-three/fiber';
+import { OrbitControls,Decal, useGLTF, useTexture } from '@react-three/drei';
 
 import state from '../store';
 
 const Shirt = () => {
   const snap = useSnapshot(state);
   const { nodes, materials } = useGLTF('/shirt_baked.glb');
-
   const logoTexture = useTexture(snap.logoDecal);
   const fullTexture = useTexture(snap.fullDecal);
-
+  const {gl} = useThree()
+ 
   useFrame((state, delta) => easing.dampC(materials.lambert1.color, snap.color, 0.25, delta));
 
   const stateString = JSON.stringify(snap);
+  
+if(snap.saveBtn){
+  const link = document.createElement('a')
+  link.setAttribute('download', 'canvas.png')
+  link.setAttribute('href', gl.domElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'))
+  link.click()
+  state.saveBtn=false
+}
+  
 
   return (
-    <group key={stateString}>
+  <>
+  
+  <OrbitControls makeDefault/>
+  
+      <group key={stateString}>
       <mesh
         castShadow
         geometry={nodes.T_Shirt_male.geometry}
@@ -47,7 +60,9 @@ const Shirt = () => {
           />
         )}
       </mesh>
+    
     </group>
+  </>
   )
 }
 
